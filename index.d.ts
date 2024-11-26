@@ -1,1 +1,1 @@
-declare module "moleculer-auto-openapi";
+declare module "moleculer-auto-zod-openapi";
