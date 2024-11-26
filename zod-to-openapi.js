@@ -157,7 +157,6 @@ const zodToOpenAPI = (zodSchema) => {
     const schemaCopy = {...zodSchema,};
     delete schemaCopy.$$$options;
 	const t = processZodType(z.object(schemaCopy));
-	console.log(t);
 	return t;
 };
 

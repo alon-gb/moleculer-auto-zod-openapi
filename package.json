@@ -1,6 +1,6 @@
 {
   "name": "moleculer-auto-zod-openapi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auto generate openapi(swagger) scheme for molecular with zod",
   "main": "index.js",
   "typings": "index.d.ts",
