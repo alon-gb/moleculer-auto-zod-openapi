@@ -1,22 +1,5 @@
 const z = require("zod");
 
-// interface OpenAPISchema {
-// 	type?: string;
-// 	description?: string;
-// 	properties?: Record<string, OpenAPISchema>;
-// 	items?: OpenAPISchema;
-// 	required?: string[];
-// 	nullable?: boolean;
-// 	enum?: (string | number)[];
-// 	oneOf?: OpenAPISchema[];
-// 	minLength?: number;
-// 	maxLength?: number;
-// 	minimum?: number;
-// 	maximum?: number;
-// 	pattern?: string;
-// 	default?: unknown;
-// }
-
 const zodToOpenAPI = (zodSchema) => {
 	function processZodType(schema) {
 		// String
@@ -128,16 +111,22 @@ const zodToOpenAPI = (zodSchema) => {
 			};
 		}
 
-		// Optional
-		if (schema instanceof z.ZodOptional || schema?._def?.typeName === "ZodOptional") {
-			return processZodType(schema.unwrap());
+		// Nullable
+		if (schema instanceof z.ZodNullable || schema?._def?.typeName === "ZodNullable") {
+            const description = schema._def.description || "";
+			return {
+				nullable: true,
+                description,
+				...processZodType(schema.unwrap()),
+			};
 		}
 
-		// Default
-		if (schema instanceof z.ZodDefault || schema?._def?.typeName === "ZodDefault") {
+		// Optional
+		if (schema instanceof z.ZodOptional || schema?._def?.typeName === "ZodOptional") {
+			const description = schema._def.description || "";
 			return {
-				...processZodType(schema._def.innerType),
-				default: schema._def.defaultValue(),
+				...processZodType(schema.unwrap()),
+				description,
 			};
 		}
         
@@ -145,8 +134,9 @@ const zodToOpenAPI = (zodSchema) => {
         if (schema instanceof z.ZodPipeline || schema?._def?.typeName === "ZodPipeline") {
             const description = schema._def.description || "";
             const mergeObject = {};
-            if (description)
+            if (description) {
                 mergeObject.description = description;
+			}
             return {...processZodType(schema._def.out), ...mergeObject};
         }
 
