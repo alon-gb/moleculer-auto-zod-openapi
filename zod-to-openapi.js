@@ -92,9 +92,12 @@ const zodToOpenAPI = (zodSchema) => {
 
 		// Union
 		if (schema instanceof z.ZodUnion || schema?._def?.typeName === "ZodUnion") {
-			const description = schema._def.description || "";
+			const mergeObject = {};
+			if (schema._def.description) {		
+				mergeObject.description = schema._def.description;
+			}
 			return {
-				description,
+				...mergeObject,
 				oneOf: schema._def.options.map((option/*: z.ZodType*/) =>
 					processZodType(option),
 				),
@@ -103,45 +106,55 @@ const zodToOpenAPI = (zodSchema) => {
 
 		// Nullable
 		if (schema instanceof z.ZodNullable || schema?._def?.typeName === "ZodNullable") {
-            const description = schema._def.description || "";
+			const mergeObject = {};
+            if (schema._def.description) {
+                mergeObject.description = schema._def.description;
+			}
 			return {
-				nullable: true,
-                description,
+				nullable: true,                
 				...processZodType(schema.unwrap()),
+				...mergeObject,
 			};
 		}
 
-		// Nullable
-		if (schema instanceof z.ZodNullable || schema?._def?.typeName === "ZodNullable") {
-            const description = schema._def.description || "";
-			return {
-				nullable: true,
-                description,
-				...processZodType(schema.unwrap()),
+		// Default
+		if (schema instanceof z.ZodDefault || schema?._def?.typeName === "ZodDefault") {
+			const mergeObject = {};
+            if (schema._def.description) {
+                mergeObject.description = schema._def.description;
+			}
+			return {                
+				...processZodType(schema._def.innerType),
+				...mergeObject,
 			};
 		}
 
 		// Optional
 		if (schema instanceof z.ZodOptional || schema?._def?.typeName === "ZodOptional") {
-			const description = schema._def.description || "";
+			const mergeObject = {};
+            if (schema._def.description) {
+                mergeObject.description = schema._def.description;
+			}
 			return {
 				...processZodType(schema.unwrap()),
-				description,
+				...mergeObject,
 			};
 		}
         
         // Pipeline
         if (schema instanceof z.ZodPipeline || schema?._def?.typeName === "ZodPipeline") {
-            const description = schema._def.description || "";
             const mergeObject = {};
-            if (description) {
-                mergeObject.description = description;
+            if (schema._def.description) {
+                mergeObject.description = schema._def.description;
 			}
-            return {...processZodType(schema._def.out), ...mergeObject};
+            return {
+				...processZodType(schema._def.out), 
+				...mergeObject
+			};
         }
 
 		// Default fallback
-		return { type: "string", description: "Invalid schema: not a zod type" };
+		return { type: "string", description: `Invalid schema: not a supported zod type ${schema?._def?.typeName}` };
 	}
 
     const schemaCopy = {...zodSchema,};
