@@ -126,6 +126,7 @@ const zodToOpenAPI = (zodSchema) => {
 			return {                
 				...processZodType(schema._def.innerType),
 				...mergeObject,
+				default: schema._def.defaultValue(),
 			};
 		}
 
